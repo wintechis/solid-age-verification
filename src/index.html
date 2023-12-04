@@ -1,7 +1,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Demo Client Application: solid-client-authn-node</title>
+    <title>SHOP APP</title>
     <style>
       h2,h3 {
         margin: 1rem 1.2rem 1rem 1.4rem;
@@ -63,15 +63,14 @@
 
   <body>
     <header>
-      <h1>Demo Client Application: solid-client-authn-node
-        <span class=logo>   <img src="https://docs.inrupt.com/images/inrupt-logo.svg" loading="lazy" width="120" alt="Inrupt Logo" class="image"> </span>
+      <h1>SHOP APP
+        
       </h1>
-      <h3>Showing how to log into a Solid Pod and fetch protected resources using NodeJS</h3>
     </header>
 
     <section id="login" class="panel">
       <div class="row">
-        <label id="labelLogin" for="btnLogin">1. Click the button to log into Identity Provider
+        <label id="labelLogin" for="btnLogin">Click the button to log into Identity Provider
           <span id="identity_provider">[<a id="oidcIssuer" target="_blank" href="{{oidcIssuer}}">{{oidcIssuer}}</a>]</span>:
         </label>
         <button onclick="location.href = '/login?oidcIssuer={{oidcIssuer}}';" name="btnLogin" id="btnLogin">Login</button>
@@ -82,7 +81,7 @@
     <div id="read" class="panel">
       <div class="row">
         <label id="labelReadProfile" for="webID"
-        >2. Read resource from (anyone's!) Pod:
+        > Verify age:
         </label>
         <input
                 type="url"
@@ -91,17 +90,14 @@
                 size="50"
                 value="{{resourceToRead}}"
         />
-        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead">Read Pod Resource</button>
+        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead">Verify</button>
       </div>
-      <dl class="display">
-        <dt>Response from Pod:&nbsp</dt>
-        <textarea id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</textarea>
-      </dl>
+  
     </div>
 
     <section id="logout" class="panel">
       <div class="row">
-        <label id="labelLogout" for="btnLogin">3. Click the button to logout:
+        <label id="labelLogout" for="btnLogin">Click the button to logout:
         </label>
         <button onclick="location.href = '/logout';" name="btnLogout" id="btnLogout">Logout</button>
         <p id="labelLogoutStatus">{{labelLogoutStatus}}</p>
