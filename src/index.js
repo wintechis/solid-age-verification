@@ -2,8 +2,8 @@
 const fs = require("fs");
 const log = require("loglevel");
 const N3 = require('n3');
+const CryptoJS = require('crypto-js');
 log.setLevel("TRACE");
-
 // The only import we need from the Node AuthN library is the Session class.
 const { Session } = require("@inrupt/solid-client-authn-node");
 //const { client } = require("@inrupt/solid-client");
@@ -102,7 +102,8 @@ app.get("/redirect", async (req, res) => {
           // shouldn't alter it, and the user is free to enter whatever resource
           // URI they actually want anyway, so it's just a convenience in the
           // 'common' case.
-          resourceToRead = info.webId.replace("/profile/card#me", "/private/wishlist");
+          //resourceToRead = info.webId.replace("/profile/card#me", "/private/wishlist");
+          resourceToRead = `https://ava.solidcommunity.net/public/6b73cf17-59cc-4dd9-8f36-328637f35ed5.rdf`;
 
           loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
           resourceValueRetrieved = `...logged in successfully - now fetch a resource.`;
@@ -139,20 +140,20 @@ app.get("/fetch", async (req, res) => {
         const response = await session.fetch(resourceToFetch);
        // session.fetch(resourceToFetch,)
         
-       
+       //resourceValueRetrieved = `age verified successfully`;
         resourceValueRetrieved = await response.text();
        /* const parser = new N3.Parser();
         const store = parser.parse(resourceValueRetrieved);
-        log.info(store);
-        */
-        log.info(`Fetch response: [${resourceValueRetrieved}]`);
+        log.info(store);*/
+        
+       // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
         resourceValueRetrieved = `Failed to fetch from resource [${resourceToFetch}]: ${error}`;
-        log.error(resourceValueRetrieved);
+        //log.error(resourceValueRetrieved);
       }
     } catch (error) {
       resourceValueRetrieved = `Resource to fetch must be a valid URL - got an error parsing [${resourceToFetch}]: ${error}`;
-      log.error(resourceValueRetrieved);
+      //log.error(resourceValueRetrieved);
     }
   }
 
@@ -160,6 +161,21 @@ app.get("/fetch", async (req, res) => {
 });
 
 app.get("/logout", async (_req, res, next) => {
+  try {
+    await session.logout();
+    resourceToRead = enterResourceUriMessage;
+    resourceValueRetrieved =
+      "...nothing read yet - click 'Read Pod Resource' button above...";
+
+    loginStatus = `Logged out successfully.`;
+    sendHtmlResponse(res);
+  } catch (error) {
+    log.error(`Logout processing failed: [${error}]`);
+    loginStatus = `Logout processing failed: [${error}]`;
+    sendHtmlResponse(res);
+  }
+});
+app.get("/verifyAge", async (_req, res, next) => {
   try {
     await session.logout();
     resourceToRead = enterResourceUriMessage;
@@ -215,4 +231,15 @@ function statusIndexHtml() {
 
     .split(markerResourceValueRetrieved)
     .join(resourceValueRetrieved);
+}
+
+function encrypt(message, key) {
+  const cipher = CryptoJS.enc.Utf8.parse(message);
+  const encrypted = CryptoJS.AES.encrypt(cipher, key);
+  return encrypted.toString();
+}
+
+function decrypt(ciphertext, key) {
+  const decrypted = CryptoJS.enc.Utf8.parse(CryptoJS.AES.decrypt(ciphertext, key).toString());
+  return decrypted.toString();
 }

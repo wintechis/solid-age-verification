@@ -81,7 +81,7 @@
     <div id="read" class="panel">
       <div class="row">
         <label id="labelReadProfile" for="webID"
-        > Verify age:
+        > Authority POD:
         </label>
         <input
                 type="url"
@@ -92,6 +92,10 @@
         />
         <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead">Verify</button>
       </div>
+      <dl class="display">
+        <dt>Response from Pod:&nbsp</dt>
+        <textarea id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</textarea>
+      </dl>
   
     </div>
 

@@ -19,8 +19,11 @@
   },
   "homepage": "https://github.com/inrupt/solid-client-authn#readme",
   "dependencies": {
-    "@inrupt/solid-client": "^1.30.2",
-    "@inrupt/solid-client-authn-node": "*",
+    "@inrupt/solid-client": "^1.23.1",
+    "@inrupt/solid-client-authn-browser": "^1.12.1",
+    "@inrupt/solid-client-authn-node": "^1.12.1",
+    "@inrupt/vocab-common-rdf": "1.0.5",
+    "crypto-js": "^4.2.0",
     "express": "^4.17.1",
     "loglevel": "^1.7.0",
     "n3": "^1.17.2",
