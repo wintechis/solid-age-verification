@@ -6,6 +6,7 @@ const CryptoJS = require('crypto-js');
 log.setLevel("TRACE");
 // The only import we need from the Node AuthN library is the Session class.
 const { Session } = require("@inrupt/solid-client-authn-node");
+const { DOMParser } = require('xmldom');
 //const { client } = require("@inrupt/solid-client");
 // import { addStringNoLocale, addUrl, createSolidDataset, createThing, getPodUrlAll, getSolidDataset, saveSolidDatasetAt, setThing } from "@inrupt/solid-client";
 const clientApplicationName = "SOLID age verification";
@@ -19,7 +20,7 @@ const PORT = 3001;
 // The HTML we return on all requests (that contains template placeholders that
 // we replace as appropriate).
 const indexHtml = "./src/index.html";
-
+let key = 'UHZdlkjetGlrkjter5487dtettGterjhkskdfhwkerweLokijhGF';
 const markerOidcIssuer = "{{oidcIssuer}}";
 const markerLoginStatus = "{{labelLoginStatus}}";
 const markerLogoutStatus = "{{labelLogoutStatus}}";
@@ -145,6 +146,13 @@ app.get("/fetch", async (req, res) => {
        /* const parser = new N3.Parser();
         const store = parser.parse(resourceValueRetrieved);
         log.info(store);*/
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(resourceValueRetrieved, "text/xml");
+
+        const name = xmlDoc.getElementsByTagName('dc:Name')[0].textContent;
+        const dob = xmlDoc.getElementsByTagName('dc:DateOfBirth')[0].textContent;
+
+        resourceValueRetrieved = `Name: [${name}]\nDate Of Birth: [${decrypt(dob,key)}]\n`;
         
        // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
@@ -232,7 +240,6 @@ function statusIndexHtml() {
     .split(markerResourceValueRetrieved)
     .join(resourceValueRetrieved);
 }
-
 function encrypt(message, key) {
   const cipher = CryptoJS.enc.Utf8.parse(message);
   const encrypted = CryptoJS.AES.encrypt(cipher, key);
@@ -240,6 +247,6 @@ function encrypt(message, key) {
 }
 
 function decrypt(ciphertext, key) {
-  const decrypted = CryptoJS.enc.Utf8.parse(CryptoJS.AES.decrypt(ciphertext, key).toString());
-  return decrypted.toString();
+  const decrypted = CryptoJS.AES.decrypt(ciphertext, key);
+  return decrypted.toString(CryptoJS.enc.Utf8);
 }
