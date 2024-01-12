@@ -124,6 +124,7 @@ app.get("/fetch", async (req, res) => {
 
     try {
       new URL(resourceToFetch);
+
       try {
         const response = await session.fetch(resourceToFetch);
         responsText = await response.text();
@@ -140,8 +141,11 @@ app.get("/fetch", async (req, res) => {
             name = quad.object.value;
           }
         });
+        
+        const { hostname } = new URL(resourceToFetch);
+        let userWebId = CryptoJS.MD5(hostname).toString();
         try {
-          let resourceToRead2 = `https://ava.solidcommunity.net/public/${authorityPod}.rdf`;
+          let resourceToRead2 = `https://ava.solidcommunity.net/public/${userWebId}.rdf`;
           const response2 = await session.fetch(resourceToRead2);
           resourceValueRetrieved = await response2.text();
 
@@ -160,13 +164,14 @@ app.get("/fetch", async (req, res) => {
         } catch (e) {
           resourceValueRetrieved = `Date of Birth is missing in  authority Pods`;
         }
+        // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
         resourceValueRetrieved = `Failed to fetch from resource [${resourceToFetch}]: ${error}`;
-      
+        //log.error(resourceValueRetrieved);
       }
     } catch (error) {
       resourceValueRetrieved = `Resource to fetch must be a valid URL - got an error parsing [${resourceToFetch}]: ${error}`;
- 
+      //log.error(resourceValueRetrieved);
     }
   }
 
