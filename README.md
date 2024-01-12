@@ -18,6 +18,11 @@ At Solid Age Verification, This app mission is to revolutionize age verification
         Define the age verification process within the application's flow, integrating SOLID pod access and Authority POD validation.
         Develop mechanisms to verify and authenticate user age information securely.
 
+## How SOLID Age Verification Process
+The shopping application will authenticate the user's date of birth by prompting them to log in. Following the login process, the verification of the date of birth will be conducted via Authority Pods.
+## Authority Pods
+The date of birth information will be stored in Authority Pods, utilizing the WebID associated with the user's personal Pods. Additionally, the date of birth details will undergo encryption for added security.
+
 ## How to start the apps
 
 Install the dependencie.
