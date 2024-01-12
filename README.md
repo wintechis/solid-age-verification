@@ -9,15 +9,11 @@ At Solid Age Verification, This app mission is to revolutionize age verification
         Setup and Authentication Flow
         Implement the initial Express server with SOLID authentication using solid-auth-client.
         Create routes for user login, authentication callbacks, and profile retrieval from SOLID pods.
-    ### Phase 2: User Consent and Information Access
-        User Consent Management
-        Design and implement a user interface for requesting access to SOLID pod information, ensuring transparency about data usage and storage.
-        Develop logic to handle user consent and grant permissions to access necessary data for age verification.
-    ### Phase 3: Authority POD Integration for Age Verification
+    ### Phase 2: Authority POD Integration for Age Verification
         Authority PODs Integration
         Research and identify Authority PODs or storage mechanisms for securely storing verified user age information based on WebIDs.
         Establish connections and protocols to write and validate age data against Authority PODs.
-    ### Phase 4: Age Verification Process
+    ### Phase 3: Age Verification Process
         Age Verification Workflow
         Define the age verification process within the application's flow, integrating SOLID pod access and Authority POD validation.
         Develop mechanisms to verify and authenticate user age information securely.

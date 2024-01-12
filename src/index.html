@@ -58,6 +58,22 @@
         margin: 1rem 1.2rem 1rem 1.4rem;
         float: right;
       }
+      .button {
+      background-color: #04AA6D; /* Green */
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+    }
+    .red{
+      color: red;
+    }
+    .green{
+      color: green;
+    }
     </style>
   </head>
 
@@ -73,7 +89,7 @@
         <label id="labelLogin" for="btnLogin">Click the button to log into Identity Provider
           <span id="identity_provider">[<a id="oidcIssuer" target="_blank" href="{{oidcIssuer}}">{{oidcIssuer}}</a>]</span>:
         </label>
-        <button onclick="location.href = '/login?oidcIssuer={{oidcIssuer}}';" name="btnLogin" id="btnLogin">Login</button>
+        <button onclick="location.href = '/login?oidcIssuer={{oidcIssuer}}';" name="btnLogin" id="btnLogin" class="button">Login</button>
         <p id="labelLoginStatus"><strong>{{labelLoginStatus}}</strong></p>
       </div>
     </section>
@@ -81,20 +97,20 @@
     <div id="read" class="panel">
       <div class="row">
         <label id="labelReadProfile" for="webID"
-        > Authority POD:
+        > Verify Date of Birth from Authority POD:
         </label>
-        <input
+        <input style="display: none;"
                 type="url"
                 id="webID"
                 name="webID"
                 size="50"
                 value="{{resourceToRead}}"
         />
-        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead">Verify</button>
+        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead" class="button">Verify Date of Birth</button>
       </div>
       <dl class="display">
         <dt>Response from Pod:&nbsp</dt>
-        <textarea id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</textarea>
+        <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</div>
       </dl>
   
     </div>

@@ -1,14 +1,12 @@
-
 const fs = require("fs");
 const log = require("loglevel");
-const N3 = require('n3');
-const CryptoJS = require('crypto-js');
+const N3 = require("n3");
+const CryptoJS = require("crypto-js");
 log.setLevel("TRACE");
 // The only import we need from the Node AuthN library is the Session class.
 const { Session } = require("@inrupt/solid-client-authn-node");
-const { DOMParser } = require('xmldom');
-//const { client } = require("@inrupt/solid-client");
-// import { addStringNoLocale, addUrl, createSolidDataset, createThing, getPodUrlAll, getSolidDataset, saveSolidDatasetAt, setThing } from "@inrupt/solid-client";
+const { DOMParser } = require("xmldom");
+
 const clientApplicationName = "SOLID age verification";
 
 const express = require("express");
@@ -20,14 +18,13 @@ const PORT = 3001;
 // The HTML we return on all requests (that contains template placeholders that
 // we replace as appropriate).
 const indexHtml = "./src/index.html";
-let key = 'UHZdlkjetGlrkjter5487dtettGterjhkskdfhwkerweLokijhGF';
 const markerOidcIssuer = "{{oidcIssuer}}";
 const markerLoginStatus = "{{labelLoginStatus}}";
 const markerLogoutStatus = "{{labelLogoutStatus}}";
 const markerResourceToRead = "{{resourceToRead}}";
 const markerResourceValueRetrieved = "{{resourceValueRetrieved}}";
 
-const oidcIssuer = "https://monir.solidcommunity.net/";
+const oidcIssuer = "https://solidcommunity.net/";
 
 const enterResourceUriMessage =
   "...but enter any resource URI to attempt to read it...";
@@ -80,8 +77,8 @@ app.get("/login", async (req, res, next) => {
   } else {
     next(
       new Error(
-        "No OIDC issuer provided to login API (expected 'oidcIssuer' query parameter)!",
-      ),
+        "No OIDC issuer provided to login API (expected 'oidcIssuer' query parameter)!"
+      )
     );
   }
 });
@@ -97,17 +94,11 @@ app.get("/redirect", async (req, res) => {
           loginStatus = `Received another redirect, but we are already handling a previous redirect request - so ignoring this one!`;
           sendHtmlResponse(res);
         } else if (info.isLoggedIn) {
-          // This is deliberately making a big assumption about the structure of
-          // the logged-in WebID, but if the WebID does have a different
-          // structure, which is perfectly valid of course, then this code
-          // shouldn't alter it, and the user is free to enter whatever resource
-          // URI they actually want anyway, so it's just a convenience in the
-          // 'common' case.
-          //resourceToRead = info.webId.replace("/profile/card#me", "/private/wishlist");
-          resourceToRead = `https://ava.solidcommunity.net/public/6b73cf17-59cc-4dd9-8f36-328637f35ed5.rdf`;
+          resourceToRead = info.webId;
 
           loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
-          resourceValueRetrieved = `...logged in successfully - now fetch a resource.`;
+          resourceValueRetrieved = `...logged in successfully - now verify Date of Birth.`;
+
           sendHtmlResponse(res);
         } else {
           loginStatus = `Got redirect, but not logged in.`;
@@ -127,41 +118,55 @@ app.get("/fetch", async (req, res) => {
 
   // Only attempt to fetch if the resource is not our message to enter a URI!
   if (resourceToFetch === enterResourceUriMessage) {
-    resourceValueRetrieved =
-      "Please enter a resource URI in the edit box above!";
+    resourceValueRetrieved = "Please login to click Login button";
   } else {
-    // Update our state with whatever was in the query param.
     resourceToRead = resourceToFetch;
 
     try {
-      // Validate our input as a URL first.
       new URL(resourceToFetch);
-
       try {
         const response = await session.fetch(resourceToFetch);
-       // session.fetch(resourceToFetch,)
-        
-       //resourceValueRetrieved = `age verified successfully`;
-        resourceValueRetrieved = await response.text();
-       /* const parser = new N3.Parser();
-        const store = parser.parse(resourceValueRetrieved);
-        log.info(store);*/
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(resourceValueRetrieved, "text/xml");
+        responsText = await response.text();
+        resourceValueRetrieved = responsText;
+        let bday;
+        let name;
+        const parser = new N3.Parser();
+        let profileInfo = parser.parse(responsText);
+        Object.entries(profileInfo).forEach(([key, quad]) => {
+          if (quad.predicate.id.search("#bday") > 0) {
+            bday = quad.object.value;
+          }
+          if (quad.predicate.id.search("#fn") > 0) {
+            name = quad.object.value;
+          }
+        });
+        try {
+          let resourceToRead2 = `https://ava.solidcommunity.net/public/${authorityPod}.rdf`;
+          const response2 = await session.fetch(resourceToRead2);
+          resourceValueRetrieved = await response2.text();
 
-        const name = xmlDoc.getElementsByTagName('dc:Name')[0].textContent;
-        const dob = xmlDoc.getElementsByTagName('dc:DateOfBirth')[0].textContent;
-
-        resourceValueRetrieved = `Name: [${name}]\nDate Of Birth: [${decrypt(dob,key)}]\n`;
-        
-       // log.info(`Fetch response: [${resourceValueRetrieved}]`);
+          const domParser = new DOMParser();
+          const xmlDoc = domParser.parseFromString(
+            resourceValueRetrieved,
+            "text/xml"
+          );
+          const dob =
+            xmlDoc.getElementsByTagName("dc:DateOfBirth")[0].textContent;
+          if (dobValidation(bday, dob)) {
+            resourceValueRetrieved = `Name: [${name}]<br>Date Of Birth: [${bday}]<br><span class="green">Date of Birth has been verified</span>`;
+          } else {
+            resourceValueRetrieved = `Name: [${name}]<br>Date Of Birth: [${bday}]<br> <span class="red">Date of Birth is not valid</span>`;
+          }
+        } catch (e) {
+          resourceValueRetrieved = `Date of Birth is missing in  authority Pods`;
+        }
       } catch (error) {
         resourceValueRetrieved = `Failed to fetch from resource [${resourceToFetch}]: ${error}`;
-        //log.error(resourceValueRetrieved);
+      
       }
     } catch (error) {
       resourceValueRetrieved = `Resource to fetch must be a valid URL - got an error parsing [${resourceToFetch}]: ${error}`;
-      //log.error(resourceValueRetrieved);
+ 
     }
   }
 
@@ -173,22 +178,7 @@ app.get("/logout", async (_req, res, next) => {
     await session.logout();
     resourceToRead = enterResourceUriMessage;
     resourceValueRetrieved =
-      "...nothing read yet - click 'Read Pod Resource' button above...";
-
-    loginStatus = `Logged out successfully.`;
-    sendHtmlResponse(res);
-  } catch (error) {
-    log.error(`Logout processing failed: [${error}]`);
-    loginStatus = `Logout processing failed: [${error}]`;
-    sendHtmlResponse(res);
-  }
-});
-app.get("/verifyAge", async (_req, res, next) => {
-  try {
-    await session.logout();
-    resourceToRead = enterResourceUriMessage;
-    resourceValueRetrieved =
-      "...nothing read yet - click 'Read Pod Resource' button above...";
+      "...nothing read yet - click 'Verify Date of Birth' button above...";
 
     loginStatus = `Logged out successfully.`;
     sendHtmlResponse(res);
@@ -203,7 +193,7 @@ app.listen(PORT, async () => {
   session = new Session();
 
   log.info(
-    `[${clientApplicationName}] successfully initialized - listening at: [http://localhost:${PORT}]`,
+    `[${clientApplicationName}] successfully initialized - listening at: [http://localhost:${PORT}]`
   );
 });
 
@@ -240,13 +230,8 @@ function statusIndexHtml() {
     .split(markerResourceValueRetrieved)
     .join(resourceValueRetrieved);
 }
-function encrypt(message, key) {
-  const cipher = CryptoJS.enc.Utf8.parse(message);
-  const encrypted = CryptoJS.AES.encrypt(cipher, key);
-  return encrypted.toString();
-}
 
-function decrypt(ciphertext, key) {
-  const decrypted = CryptoJS.AES.decrypt(ciphertext, key);
-  return decrypted.toString(CryptoJS.enc.Utf8);
+function dobValidation(dob, avaDob) {
+  if (CryptoJS.MD5(dob).toString() == avaDob) return true;
+  return false;
 }
