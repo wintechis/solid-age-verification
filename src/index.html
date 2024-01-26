@@ -121,12 +121,12 @@
         </label>
         <input style="display: block;"
                 type="url"
-                id="webID"
+                id="SchufawebID"
                 name="webID"
                 size="50"
-                value="{{resourceToRead}}"
+                value="{{SchufaResourceToRead}}"
         />
-        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch_schufa?resource=${resource}`;" name="btnRead" id="btnRead" class="button">Verify Schufa Credit Scores</button>
+        <button onclick="const Schufaresource = document.getElementById('SchufawebID').value; location.href = `/fetch_schufa?resource=${Schufaresource}`;" name="btnRead" id="btnRead" class="button">Verify Schufa Credit Scores</button>
       </div>
       <dl class="display">
         <dt>Response from Pod:&nbsp</dt>

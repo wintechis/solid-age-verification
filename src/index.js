@@ -24,6 +24,7 @@ const markerLogoutStatus = "{{labelLogoutStatus}}";
 const markerResourceToRead = "{{resourceToRead}}";
 const markerResourceValueRetrieved = "{{resourceValueRetrieved}}";
 const markerSchufaValueRetrieved = "{{resourceSchufaValueRetrieved}}";
+const markerSchufaResourceToRead = "{{SchufaResourceToRead}}";
 
 const oidcIssuer = "https://solidcommunity.net/";
 
@@ -33,6 +34,7 @@ const enterResourceUriMessage =
 // We expect these values to be overwritten as the users interacts!
 const loggedOutStatus = "";
 let resourceToRead = enterResourceUriMessage;
+let SchufaResourceToRead = "Schufa Credit Score Link"
 let resourceValueRetrieved = "...not read yet...";
 let loginStatus = "Not logged in yet.";
 
@@ -88,16 +90,17 @@ app.get("/login", async (req, res, next) => {
 
 app.get("/redirect", async (req, res) => {
   try {
-    log.debug(`Got redirect: [${getRequestFullUrl(req)}]`);
+    //log.debug(`Got redirect: [${getRequestFullUrl(req)}]`);
     await session
       .handleIncomingRedirect(getRequestFullUrl(req))
       .then((info) => {
-        log.info(`Got INFO: [${JSON.stringify(info, null, 2)}]`);
+        //log.info(`Got INFO: [${JSON.stringify(info, null, 2)}]`);
         if (info === undefined) {
           loginStatus = `Received another redirect, but we are already handling a previous redirect request - so ignoring this one!`;
           sendHtmlResponse(res);
         } else if (info.isLoggedIn) {
           resourceToRead = info.webId;
+          SchufaResourceToRead = 'https://monir.solidcommunity.net/private/info/schufa.rdf';
 
           loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
           resourceValueRetrieved = `...logged in successfully - now verify Date of Birth.`;
@@ -189,6 +192,7 @@ app.get("/fetch_schufa", async (req, res) => {
     SchufaValueRetrieved = "Please login to click Login button";
   } else {
     resourceToRead = resourceToFetch;
+    SchufaResourceToRead = resourceToFetch;
 
     try {
       new URL(resourceToFetch);
@@ -197,6 +201,7 @@ app.get("/fetch_schufa", async (req, res) => {
         const response = await session.fetch(resourceToFetch);
         responsText = await response.text();
         SchufaValueRetrieved = responsText;
+        console.log(SchufaValueRetrieved);
         let name;
         let verifyURL;
         let Schufa;
@@ -205,31 +210,33 @@ app.get("/fetch_schufa", async (req, res) => {
           SchufaValueRetrieved,
           "text/xml"
         );
-        console.log(xmlDoc);
+       
        verifyURL =
           xmlDoc.getElementsByTagName("dc:verifyURL")[0].textContent;
+
+          
         
-        const { hostname } = new URL(resourceToFetch);
-        let userWebId = CryptoJS.MD5(hostname).toString();
+      
         try {
           let resourceToRead2 = verifyURL;
           const response2 = await session.fetch(resourceToRead2);
           SchufaValueRetrieved = await response2.text();
 
           const domParser = new DOMParser();
-          const xmlDoc = domParser.parseFromString(
+          const xmlDoc2 = domParser.parseFromString(
             SchufaValueRetrieved,
             "text/xml"
           );
+         
           const name =
-            xmlDoc.getElementsByTagName("dc:name")[0].textContent;
+          xmlDoc2.getElementsByTagName("dc:name")[0].textContent;
           const Schufa =
-            xmlDoc.getElementsByTagName("dc:schufa")[0].textContent;
+          xmlDoc2.getElementsByTagName("dc:schufa")[0].textContent;
             SchufaValueRetrieved = `Name: [${name}]<br>Schufa Scores: [${Schufa}]`;
           
           
         } catch (e) {
-          SchufaValueRetrieved = `Date of Birth is missing in  authority Pods`;
+          SchufaValueRetrieved = `Schufa score is missing in  Schufa Pods`;
         }
         // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
@@ -304,6 +311,9 @@ function statusIndexHtml() {
 
     .split(markerSchufaValueRetrieved)
     .join(SchufaValueRetrieved)
+
+    .split(markerSchufaResourceToRead)
+    .join(SchufaResourceToRead)
 }
 
 function dobValidation(dob, avaDob) {
