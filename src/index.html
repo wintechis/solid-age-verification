@@ -114,6 +114,26 @@
       </dl>
   
     </div>
+    <div id="read" class="panel">
+      <div class="row">
+        <label id="labelReadProfile" for="webID"
+        > Verify Schufa Credit Scores's from Schufa POD:
+        </label>
+        <input style="display: block;"
+                type="url"
+                id="webID"
+                name="webID"
+                size="50"
+                value="{{resourceToRead}}"
+        />
+        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch_schufa?resource=${resource}`;" name="btnRead" id="btnRead" class="button">Verify Schufa Credit Scores</button>
+      </div>
+      <dl class="display">
+        <dt>Response from Pod:&nbsp</dt>
+        <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceSchufaValueRetrieved}}</div>
+      </dl>
+  
+    </div>
 
     <section id="logout" class="panel">
       <div class="row">
