@@ -23,6 +23,9 @@ The shopping application will authenticate the user's date of birth by prompting
 ## Authority Pods
 The date of birth information will be stored in Authority Pods, utilizing the WebID associated with the user's personal Pods. Additionally, the date of birth details will undergo encryption for added security.
 
+## Schufa Pods
+The Schufa credit information will be stored in Schufa Pods.
+
 ## How to start the apps
 
 Install the dependencie.
