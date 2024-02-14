@@ -11,6 +11,7 @@ const clientApplicationName = "SOLID age verification";
 
 const express = require("express");
 const { resourceUsage } = require("process");
+const { Console } = require("console");
 
 const app = express();
 const PORT = 3001;
@@ -34,7 +35,7 @@ const enterResourceUriMessage =
 // We expect these values to be overwritten as the users interacts!
 const loggedOutStatus = "";
 let resourceToRead = enterResourceUriMessage;
-let SchufaResourceToRead = "Schufa Credit Score Link"
+let SchufaResourceToRead = "Schufa Credit Score Link";
 let resourceValueRetrieved = "...not read yet...";
 let loginStatus = "Not logged in yet.";
 
@@ -100,7 +101,8 @@ app.get("/redirect", async (req, res) => {
           sendHtmlResponse(res);
         } else if (info.isLoggedIn) {
           resourceToRead = info.webId;
-          SchufaResourceToRead = 'https://monir.solidcommunity.net/private/info/schufa.rdf';
+          SchufaResourceToRead =
+            "https://monir.solidcommunity.net/private/info/schufa.rdf";
 
           loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
           resourceValueRetrieved = `...logged in successfully - now verify Date of Birth.`;
@@ -147,7 +149,7 @@ app.get("/fetch", async (req, res) => {
             name = quad.object.value;
           }
         });
-        
+
         const { hostname } = new URL(resourceToFetch);
         let userWebId = CryptoJS.MD5(hostname).toString();
         try {
@@ -205,38 +207,28 @@ app.get("/fetch_schufa", async (req, res) => {
         let name;
         let verifyURL;
         let Schufa;
+        let key;
         const domParser = new DOMParser();
         const xmlDoc = domParser.parseFromString(
           SchufaValueRetrieved,
           "text/xml"
         );
-       
-       verifyURL =
-          xmlDoc.getElementsByTagName("dc:verifyURL")[0].textContent;
 
-          
-        
-      
+        verifyURL = xmlDoc.getElementsByTagName("dc:verifyURL")[0].textContent;
+        key = xmlDoc.getElementsByTagName("dc:key")[0].textContent;
+
         try {
           let resourceToRead2 = verifyURL;
-          const response2 = await session.fetch(resourceToRead2);
-          SchufaValueRetrieved = await response2.text();
+          const SchufaResponse = await session.fetch(resourceToRead2);
+          const resData = await SchufaResponse.text();
 
-          const domParser = new DOMParser();
-          const xmlDoc2 = domParser.parseFromString(
-            SchufaValueRetrieved,
-            "text/xml"
-          );
+          const domParserForSchufa = new DOMParser();
+          const xmlDoc2 = domParserForSchufa.parseFromString(resData, "text/xml");
+          const score =   xmlDoc2.getElementsByTagName("dc:score")[0].textContent;
+          SchufaValueRetrieved = `Schufa score is ` + decryptData(score.trim(),key);
          
-          const name =
-          xmlDoc2.getElementsByTagName("dc:name")[0].textContent;
-          const Schufa =
-          xmlDoc2.getElementsByTagName("dc:schufa")[0].textContent;
-            SchufaValueRetrieved = `Name: [${name}]<br>Schufa Scores: [${Schufa}]`;
-          
-          
         } catch (e) {
-          SchufaValueRetrieved = `Schufa score is missing in  Schufa Pods`;
+          SchufaValueRetrieved = `Schufa score is missing in  Schufa Pods` + e;
         }
         // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
@@ -313,10 +305,22 @@ function statusIndexHtml() {
     .join(SchufaValueRetrieved)
 
     .split(markerSchufaResourceToRead)
-    .join(SchufaResourceToRead)
+    .join(SchufaResourceToRead);
 }
 
 function dobValidation(dob, avaDob) {
   if (CryptoJS.MD5(dob).toString() == avaDob) return true;
   return false;
+}
+
+// Encryption function
+function encryptData(data, key) {
+  const encryptedData = CryptoJS.AES.encrypt(data, key).toString();
+  return encryptedData;
+}
+
+// Decryption function
+function decryptData(encryptedData, key) {
+  const decryptedData = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
+  return decryptedData;
 }

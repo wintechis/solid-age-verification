@@ -1,8 +1,11 @@
 # solid-age-verification
 Welcome to Solid Age Verification, an innovative shop application designed to ensure secure and seamless age verification using SOLID pods. This platform seeks user consent to access information stored in their personal SOLID pods. Leveraging the Authority PODs, This app securely store and validate user ages based on their unique WebIDs, ensuring a trusted and privacy-centric age verification process. With SOLID technology, it will prioritize user control over their data while guaranteeing accurate and reliable age verification for a safe shopping experience.
 
+## Context
+This app is a Solid Application for the Hot Topics Seminar at the Chair of Technical Information Systems at FAU Erlangen-Nuremberg and is supervised by Daniel Schraudner.
+
 ## Mission
-At Solid Age Verification, This app mission is to revolutionize age verification in online shopping by harnessing the power of SOLID pods. To enabling a seamless, user-centric experience that prioritizes privacy and control over personal data. Through this innovative approach, we aim to establish a trusted and secure framework using Authority PODs to accurately verify user ages, ensuring compliance with age-restricted purchases while upholding the principles of transparency, security, and user empowerment within the SOLID ecosystem. Our goal is to redefine age verification, offering a solution that respects individual privacy while fostering a safe and inclusive online shopping environment.
+Our mission at the Solid Age Verification app is to demonstrate the seamless verification of age through the authority Pod while preserving user privacy. This app follows the SOLID protocol, ensuring data sovereignty and interoperability. We aim to continually enhance security measures by adding an additional layer of protection to prevent the disclosure of personal data. Additionally, we have integrated features to explore the extension of verification capabilities, such as incorporating Schufa credit verification.
 
 ## Roadmap
     ### Phase 1: Foundation and Authentication
