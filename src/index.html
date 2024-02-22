@@ -1,147 +1,146 @@
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>SHOP APP</title>
-    <style>
-      h2,h3 {
-        margin: 1rem 1.2rem 1rem 1.4rem;
-      }
 
-      header {
-        border-bottom: #5795b9 solid;
-        padding-left: .5rem;
-      }
+<head>
+  <meta charset="utf-8">
+  <title>SHOP APP</title>
+  <style>
+    h2,
+    h3 {
+      margin: 1rem 1.2rem 1rem 1.4rem;
+    }
 
-      .panel {
-        border: 1px solid #005b81;
-        border-radius: 4px;
-        box-shadow: rgb(184, 196, 194) 0px 4px 10px -4px;
-        box-sizing: border-box;
+    header {
+      border-bottom: #5795b9 solid;
+      padding-left: .5rem;
+    }
 
-        padding: 1rem 1.5rem;
-        margin: 1rem 1.2rem 1rem 1.2rem;
-      }
+    .panel {
+      border: 1px solid #005b81;
+      border-radius: 4px;
+      box-shadow: rgb(184, 196, 194) 0px 4px 10px -4px;
+      box-sizing: border-box;
 
-      #login {
-        background: white;
-      }
+      padding: 1rem 1.5rem;
+      margin: 1rem 1.2rem 1rem 1.2rem;
+    }
 
-      #read {
-        background: #e6f4f9;
-      }
+    #login {
+      background: white;
+    }
 
-      #logout {
-        background: lightblue;
-      }
+    #read {
+      background: #e6f4f9;
+    }
 
-      #labelLoginStatus[role="alert"] {
-        padding-left: 1rem;
-        color: purple;
-      }
+    #logout {
+      background: lightblue;
+    }
 
-      #labelLogoutStatus[role="alert"] {
-        padding-left: 1rem;
-        color: purple;
-      }
+    #labelLoginStatus[role="alert"] {
+      padding-left: 1rem;
+      color: purple;
+    }
 
-      .display {
-        margin-left: 1rem;
-        color: gray;
-      }
+    #labelLogoutStatus[role="alert"] {
+      padding-left: 1rem;
+      color: purple;
+    }
 
-      dl {
-        display: grid;
-        grid-template-columns:  max-content auto;
-      }
+    .display {
+      margin-left: 1rem;
+      color: gray;
+    }
 
-      .logo {
-        margin: 1rem 1.2rem 1rem 1.4rem;
-        float: right;
-      }
-      .button {
-      background-color: #04AA6D; /* Green */
+    dl {
+      display: grid;
+      grid-template-columns: max-content auto;
+    }
+
+    .logo {
+      margin: 1rem 1.2rem 1rem 1.4rem;
+      float: right;
+    }
+
+    .button {
+      background-color: #04AA6D;
+      /* Green */
       border: none;
       color: white;
-      padding: 15px 32px;
+      padding: 5px 10px;
       text-align: center;
       text-decoration: none;
       display: inline-block;
       font-size: 16px;
     }
-    .red{
+
+    .red {
       color: red;
     }
-    .green{
+
+    .green {
       color: green;
     }
-    </style>
-  </head>
+  </style>
+</head>
 
-  <body>
-    <header>
-      <h1>SHOP APP
-        
-      </h1>
-    </header>
+<body>
+  <header>
+    <h1>SHOP APP </h1>
+    <span>Hot Topics Seminar at the Chair of Technical Information Systems at FAU Erlangen-Nuremberg</span>
+  </header>
 
-    <section id="login" class="panel">
-      <div class="row">
-        <label id="labelLogin" for="btnLogin">Click the button to log into Identity Provider
-          <span id="identity_provider">[<a id="oidcIssuer" target="_blank" href="{{oidcIssuer}}">{{oidcIssuer}}</a>]</span>:
-        </label>
-        <button onclick="location.href = '/login?oidcIssuer={{oidcIssuer}}';" name="btnLogin" id="btnLogin" class="button">Login</button>
-        <p id="labelLoginStatus"><strong>{{labelLoginStatus}}</strong></p>
-      </div>
-    </section>
-
-    <div id="read" class="panel">
-      <div class="row">
-        <label id="labelReadProfile" for="webID"
-        > Verify Date of Birth from Authority POD:
-        </label>
-        <input style="display: none;"
-                type="url"
-                id="webID"
-                name="webID"
-                size="50"
-                value="{{resourceToRead}}"
-        />
-        <button onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;" name="btnRead" id="btnRead" class="button">Verify Date of Birth</button>
-      </div>
-      <dl class="display">
-        <dt>Response from Pod:&nbsp</dt>
-        <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</div>
-      </dl>
-  
+  <section id="login" class="panel">
+    <div class="row">
+      <label id="labelLogin" for="btnLogin">Click the button to log into Identity Provider
+        <span id="identity_provider">[<a id="oidcIssuer" target="_blank"
+            href="{{oidcIssuer}}">{{oidcIssuer}}</a>]</span>:
+      </label>
+      <button onclick="location.href = '/login?oidcIssuer={{oidcIssuer}}';" name="btnLogin" id="btnLogin"
+        class="button">Login</button>
+      <p id="labelLoginStatus"><strong>{{labelLoginStatus}}</strong></p>
     </div>
-    <div id="read" class="panel">
-      <div class="row">
-        <label id="labelReadProfile" for="webID"
-        > Verify Schufa Credit Scores's from Schufa POD:
-        </label>
-        <input style="display: block;"
-                type="url"
-                id="SchufawebID"
-                name="webID"
-                size="50"
-                value="{{SchufaResourceToRead}}"
-        />
-        <button onclick="const Schufaresource = document.getElementById('SchufawebID').value; location.href = `/fetch_schufa?resource=${Schufaresource}`;" name="btnRead" id="btnRead" class="button">Verify Schufa Credit Scores</button>
-      </div>
-      <dl class="display">
-        <dt>Response from Pod:&nbsp</dt>
-        <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceSchufaValueRetrieved}}</div>
-      </dl>
-  
-    </div>
+  </section>
 
-    <section id="logout" class="panel">
-      <div class="row">
-        <label id="labelLogout" for="btnLogin">Click the button to logout:
-        </label>
-        <button onclick="location.href = '/logout';" name="btnLogout" id="btnLogout">Logout</button>
-        <p id="labelLogoutStatus">{{labelLogoutStatus}}</p>
-      </div>
-    </section>
-  </body>
+  <div id="read" class="panel">
+    <div class="row">
+      <label id="labelReadProfile" for="webID"> Verify Date of Birth from Authority POD:
+      </label>
+      <input style="display: none;" type="url" id="webID" name="webID" size="50" value="{{resourceToRead}}" />
+      <button
+        onclick="const resource = document.getElementById('webID').value; location.href = `/fetch?resource=${resource}`;"
+        name="btnRead" id="btnRead" class="button">Verify Date of Birth</button>
+    </div>
+    <dl class="display">
+      <dt>Response from Pod:&nbsp</dt>
+      <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceValueRetrieved}}</div>
+    </dl>
+
+  </div>
+  <div id="read" class="panel">
+    <div class="row">
+      <label id="labelReadProfile" for="webID"> Verify Schufa Credit Scores's from Schufa POD:
+      </label>
+      <input style="display: block;" type="url" id="SchufawebID" name="webID" size="50"
+        value="{{SchufaResourceToRead}}" />
+      <button
+        onclick="const Schufaresource = document.getElementById('SchufawebID').value; location.href = `/fetch_schufa?resource=${Schufaresource}`;"
+        name="btnRead" id="btnRead" class="button">Verify Schufa Credit Scores</button>
+    </div>
+    <dl class="display">
+      <dt>Response from Pod:&nbsp</dt>
+      <div id="textareaResponse" readonly rows='20' cols='120' wrap='off'>{{resourceSchufaValueRetrieved}}</div>
+    </dl>
+
+  </div>
+
+  <section id="logout" class="panel">
+    <div class="row">
+      <label id="labelLogout" for="btnLogin">Click the button to logout:
+      </label>
+      <button onclick="location.href = '/logout';" name="btnLogout" id="btnLogout">Logout</button>
+      <p id="labelLogoutStatus">{{labelLogoutStatus}}</p>
+    </div>
+  </section>
+</body>
+
 </html>

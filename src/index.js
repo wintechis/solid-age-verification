@@ -3,21 +3,22 @@ const log = require("loglevel");
 const N3 = require("n3");
 const CryptoJS = require("crypto-js");
 log.setLevel("TRACE");
-// The only import we need from the Node AuthN library is the Session class.
+
+// Importing necessary class from Solid Client Authentication Node library
 const { Session } = require("@inrupt/solid-client-authn-node");
+
+// Importing DOMParser for XML parsing
 const { DOMParser } = require("xmldom");
 
+// Application name
 const clientApplicationName = "SOLID age verification";
 
+// Express framework for handling HTTP requests
 const express = require("express");
-const { resourceUsage } = require("process");
-const { Console } = require("console");
-
 const app = express();
 const PORT = 3001;
 
-// The HTML we return on all requests (that contains template placeholders that
-// we replace as appropriate).
+// HTML file path containing template placeholders
 const indexHtml = "./src/index.html";
 const markerOidcIssuer = "{{oidcIssuer}}";
 const markerLoginStatus = "{{labelLoginStatus}}";
@@ -27,31 +28,32 @@ const markerResourceValueRetrieved = "{{resourceValueRetrieved}}";
 const markerSchufaValueRetrieved = "{{resourceSchufaValueRetrieved}}";
 const markerSchufaResourceToRead = "{{SchufaResourceToRead}}";
 
+// Default OIDC issuer
 const oidcIssuer = "https://solidcommunity.net/";
 
-const enterResourceUriMessage =
-  "...but enter any resource URI to attempt to read it...";
+// Message to enter resource URI
+const enterResourceUriMessage = "...but enter any resource URI to attempt to read it...";
 
-// We expect these values to be overwritten as the users interacts!
-const loggedOutStatus = "";
+// Status variables initialized
+let loggedOutStatus = "";
 let resourceToRead = enterResourceUriMessage;
 let SchufaResourceToRead = "Schufa Credit Score Link";
 let resourceValueRetrieved = "...not read yet...";
 let loginStatus = "Not logged in yet.";
-
 let SchufaValueRetrieved = "Schufa score for resource";
 
-// Initialised when the server comes up and is running...
+// Session variable to be initialized when the server starts
 let session;
 
+// Handler for root endpoint
 app.get("/", (_req, res) => {
   loginStatus = session.info.isLoggedIn
     ? `Logged in as [${session.info.webId}]`
     : `Not logged in`;
-
   sendHtmlResponse(res);
 });
 
+// Handler for login endpoint
 app.get("/login", async (req, res, next) => {
   const { oidcIssuer } = req.query;
 
@@ -66,9 +68,7 @@ app.get("/login", async (req, res, next) => {
         oidcIssuer,
         clientName: clientApplicationName,
         handleRedirect: (data) => {
-          res.writeHead(302, {
-            location: data,
-          });
+          res.writeHead(302, { location: data });
           res.end();
         },
       });
@@ -81,50 +81,39 @@ app.get("/login", async (req, res, next) => {
       sendHtmlResponse(res);
     }
   } else {
-    next(
-      new Error(
-        "No OIDC issuer provided to login API (expected 'oidcIssuer' query parameter)!"
-      )
-    );
+    next(new Error("No OIDC issuer provided to login API (expected 'oidcIssuer' query parameter)!"));
   }
 });
 
+// Handler for redirect endpoint
 app.get("/redirect", async (req, res) => {
   try {
-    //log.debug(`Got redirect: [${getRequestFullUrl(req)}]`);
-    await session
-      .handleIncomingRedirect(getRequestFullUrl(req))
-      .then((info) => {
-        //log.info(`Got INFO: [${JSON.stringify(info, null, 2)}]`);
-        if (info === undefined) {
-          loginStatus = `Received another redirect, but we are already handling a previous redirect request - so ignoring this one!`;
-          sendHtmlResponse(res);
-        } else if (info.isLoggedIn) {
-          resourceToRead = info.webId;
-          SchufaResourceToRead =
-            "https://monir.solidcommunity.net/private/info/schufa.rdf";
-
-          loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
-          resourceValueRetrieved = `...logged in successfully - now verify Date of Birth.`;
-
-          sendHtmlResponse(res);
-        } else {
-          loginStatus = `Got redirect, but not logged in.`;
-          sendHtmlResponse(res);
-        }
-      });
+    await session.handleIncomingRedirect(getRequestFullUrl(req)).then((info) => {
+      if (info === undefined) {
+        loginStatus = `Received another redirect, but we are already handling a previous redirect request - so ignoring this one!`;
+        sendHtmlResponse(res);
+      } else if (info.isLoggedIn) {
+        resourceToRead = info.webId;
+        SchufaResourceToRead = "https://monir.solidcommunity.net/private/info/schufa.rdf";
+        loginStatus = `Successfully logged in with WebID: [${info.webId}].`;
+        resourceValueRetrieved = `...logged in successfully - now verify Date of Birth.`;
+        sendHtmlResponse(res);
+      } else {
+        loginStatus = `Got redirect, but not logged in.`;
+        sendHtmlResponse(res);
+      }
+    });
   } catch (error) {
     log.error(`Error processing redirect: [${error}]`);
-
     loginStatus = `Redirected, but failed to handle this as an OAuth2 redirect: [${error}]`;
     sendHtmlResponse(res);
   }
 });
 
+// Handler for fetch endpoint
 app.get("/fetch", async (req, res) => {
   const resourceToFetch = req.query.resource;
 
-  // Only attempt to fetch if the resource is not our message to enter a URI!
   if (resourceToFetch === enterResourceUriMessage) {
     resourceValueRetrieved = "Please login to click Login button";
   } else {
@@ -158,38 +147,30 @@ app.get("/fetch", async (req, res) => {
           resourceValueRetrieved = await response2.text();
 
           const domParser = new DOMParser();
-          const xmlDoc = domParser.parseFromString(
-            resourceValueRetrieved,
-            "text/xml"
-          );
-          const dob =
-            xmlDoc.getElementsByTagName("dc:DateOfBirth")[0].textContent;
-          if (dobValidation(bday, dob)) {
+          const xmlDoc = domParser.parseFromString(resourceValueRetrieved, "text/xml");
+          const dob = xmlDoc.getElementsByTagName("dc:DateOfBirth")[0].textContent;
+          if (validating(bday, dob)) {
             resourceValueRetrieved = `Name: [${name}]<br>Date Of Birth: [${bday}]<br><span class="green">Date of Birth has been verified</span>`;
           } else {
             resourceValueRetrieved = `Name: [${name}]<br>Date Of Birth: [${bday}]<br> <span class="red">Date of Birth is not valid</span>`;
           }
         } catch (e) {
-          resourceValueRetrieved = `Date of Birth is missing in  authority Pods`;
+          resourceValueRetrieved = `Date of Birth is missing in authority Pods`;
         }
-        // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
         resourceValueRetrieved = `Failed to fetch from resource [${resourceToFetch}]: ${error}`;
-        //log.error(resourceValueRetrieved);
       }
     } catch (error) {
       resourceValueRetrieved = `Resource to fetch must be a valid URL - got an error parsing [${resourceToFetch}]: ${error}`;
-      //log.error(resourceValueRetrieved);
     }
   }
-
   sendHtmlResponse(res);
 });
 
+// Handler for Schufa fetch endpoint
 app.get("/fetch_schufa", async (req, res) => {
   const resourceToFetch = req.query.resource;
 
-  // Only attempt to fetch if the resource is not our message to enter a URI!
   if (resourceToFetch === enterResourceUriMessage) {
     SchufaValueRetrieved = "Please login to click Login button";
   } else {
@@ -203,54 +184,50 @@ app.get("/fetch_schufa", async (req, res) => {
         const response = await session.fetch(resourceToFetch);
         responsText = await response.text();
         SchufaValueRetrieved = responsText;
-        console.log(SchufaValueRetrieved);
         let name;
         let verifyURL;
         let Schufa;
         let key;
         const domParser = new DOMParser();
-        const xmlDoc = domParser.parseFromString(
-          SchufaValueRetrieved,
-          "text/xml"
-        );
+        const xmlDoc = domParser.parseFromString(SchufaValueRetrieved, "text/xml");
+        name = xmlDoc.getElementsByTagName("dc:Name")[0].textContent;
+        Schufa = xmlDoc.getElementsByTagName("dc:SchufaScore")[0].textContent;
 
-        verifyURL = xmlDoc.getElementsByTagName("dc:verifyURL")[0].textContent;
-        key = xmlDoc.getElementsByTagName("dc:key")[0].textContent;
+        const { hostname } = new URL(resourceToFetch);
+        let userWebId = CryptoJS.MD5(hostname).toString();
 
         try {
-          let resourceToRead2 = verifyURL;
-          const SchufaResponse = await session.fetch(resourceToRead2);
+          let  verifyURL = `https://schufa.solidcommunity.net/public/${userWebId}.rdf`;
+          const SchufaResponse = await session.fetch(verifyURL);
           const resData = await SchufaResponse.text();
 
           const domParserForSchufa = new DOMParser();
           const xmlDoc2 = domParserForSchufa.parseFromString(resData, "text/xml");
-          const score =   xmlDoc2.getElementsByTagName("dc:score")[0].textContent;
-          SchufaValueRetrieved = `Schufa score is ` + decryptData(score.trim(),key);
-         
+          const score = xmlDoc2.getElementsByTagName("dc:score")[0].textContent;
+          if (validating(Schufa, score)) {
+            SchufaValueRetrieved = `Name: [${name}]<br>Schufa score is: [${Schufa}]<br><span class="green">Schufa score has been verified</span>`;
+          } else {
+            SchufaValueRetrieved = `Name: [${name}]<br>Schufa score is: [${Schufa}]<br> <span class="red">Schufa score is not valid</span>`;
+          }
         } catch (e) {
-          SchufaValueRetrieved = `Schufa score is missing in  Schufa Pods` + e;
+          SchufaValueRetrieved = `Schufa score is missing in Schufa Pods` + e;
         }
-        // log.info(`Fetch response: [${resourceValueRetrieved}]`);
       } catch (error) {
         SchufaValueRetrieved = `Failed to fetch from resource [${resourceToFetch}]: ${error}`;
-        //log.error(resourceValueRetrieved);
       }
     } catch (error) {
       SchufaValueRetrieved = `Resource to fetch must be a valid URL - got an error parsing [${resourceToFetch}]: ${error}`;
-      //log.error(resourceValueRetrieved);
     }
   }
-
   sendHtmlResponse(res);
 });
 
+// Handler for logout endpoint
 app.get("/logout", async (_req, res, next) => {
   try {
     await session.logout();
     resourceToRead = enterResourceUriMessage;
-    resourceValueRetrieved =
-      "...nothing read yet - click 'Verify Date of Birth' button above...";
-
+    resourceValueRetrieved = "...nothing read yet - click 'Verify Date of Birth' button above...";
     loginStatus = `Logged out successfully.`;
     sendHtmlResponse(res);
   } catch (error) {
@@ -260,14 +237,13 @@ app.get("/logout", async (_req, res, next) => {
   }
 });
 
+// Start the server
 app.listen(PORT, async () => {
   session = new Session();
-
-  log.info(
-    `[${clientApplicationName}] successfully initialized - listening at: [http://localhost:${PORT}]`
-  );
+  log.info(`[${clientApplicationName}] successfully initialized - listening at: [http://localhost:${PORT}]`);
 });
 
+// Function to send HTML response
 function sendHtmlResponse(response) {
   response
     .writeHead(200, { "Content-Type": "text/html" })
@@ -275,52 +251,40 @@ function sendHtmlResponse(response) {
   response.end();
 }
 
+// Function to get full URL from request
 function getRequestFullUrl(request) {
   return `${request.protocol}://${request.get("host")}${request.originalUrl}`;
 }
 
+// Function to get query parameter from request
 function getRequestQueryParam(request, param) {
   return `${request.protocol}://${request.get("host")}${request.originalUrl}`;
 }
 
+// Function to replace placeholders in HTML template with actual values
 function statusIndexHtml() {
   return fs
     .readFileSync(indexHtml, "utf8")
-    .split(markerOidcIssuer)
-    .join(oidcIssuer)
-
-    .split(markerLoginStatus)
-    .join(loginStatus)
-
-    .split(markerLogoutStatus)
-    .join(loggedOutStatus)
-
-    .split(markerResourceToRead)
-    .join(resourceToRead)
-
-    .split(markerResourceValueRetrieved)
-    .join(resourceValueRetrieved)
-
-    .split(markerSchufaValueRetrieved)
-    .join(SchufaValueRetrieved)
-
-    .split(markerSchufaResourceToRead)
-    .join(SchufaResourceToRead);
+    .split(markerOidcIssuer).join(oidcIssuer)
+    .split(markerLoginStatus).join(loginStatus)
+    .split(markerLogoutStatus).join(loggedOutStatus)
+    .split(markerResourceToRead).join(resourceToRead)
+    .split(markerResourceValueRetrieved).join(resourceValueRetrieved)
+    .split(markerSchufaValueRetrieved).join(SchufaValueRetrieved)
+    .split(markerSchufaResourceToRead).join(SchufaResourceToRead);
 }
 
-function dobValidation(dob, avaDob) {
-  if (CryptoJS.MD5(dob).toString() == avaDob) return true;
-  return false;
+// Function to validate date of birth
+function validating(personalPodInfo, authorityPodInfo) {
+  return CryptoJS.MD5(personalPodInfo).toString() === authorityPodInfo;
 }
 
 // Encryption function
 function encryptData(data, key) {
-  const encryptedData = CryptoJS.AES.encrypt(data, key).toString();
-  return encryptedData;
+  return CryptoJS.AES.encrypt(data, key).toString();
 }
 
 // Decryption function
 function decryptData(encryptedData, key) {
-  const decryptedData = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
-  return decryptedData;
+  return CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
 }

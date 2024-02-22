@@ -37,20 +37,23 @@ Schufa Pods employ AES encryption to safeguard the stored Schufa credit scores, 
 - User initiates login process using their SOLID app credentials within the application.
 - Upon successful login, the application prompts the user to verify their age.
 - The application accesses the user's POD to retrieve necessary information.
-- Subsequently, the application fetches the encrypted age information from the Authority POD.
-- The encrypted age information is decrypted within the application for verification purposes.
-- The user's age verification status is then determined based on the decrypted information.
+- Subsequently, the application fetches the hashed date of birth information from the Authority POD.
+- The hashed date of birth information matching within the application for verification purposes.
+- The user's age verification status is then determined based on the hashed information of the Authority POD.
 - Finally, the application provides appropriate access or functionality based on the verified age status.
+
+## New Features for features
+New feature to control access of the Schufa score file 
 
 ## How to start the apps
 
-Install the dependencie.
+Install the dependencies
 
 ```bash
 npm install
 ```
 
-Start all the frontends of the shop app:
+Start the frontends of the shop app:
 
 ```bash
 npm start
