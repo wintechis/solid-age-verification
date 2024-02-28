@@ -1,3 +1,10 @@
+/**
+ * This JavaScript code sets up a server using Express framework to handle authentication, fetching and
+ * verifying data from Solid pods, including Schufa credit scores.
+ * @param response - The `response` parameter in the code refers to the HTTP response object that is
+ * used to send a response back to the client making the HTTP request. In this case, it is used to send
+ * an HTML response back to the client with the status of the application.
+ */
 const fs = require("fs");
 const log = require("loglevel");
 const N3 = require("n3");
