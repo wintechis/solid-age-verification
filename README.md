@@ -33,6 +33,13 @@ The date of birth information will be stored in Authority Pods, utilizing the We
 ## Schufa Pods
 Schufa Pods employ AES encryption to safeguard the stored Schufa credit scores, ensuring robust security measures. This encryption method enhances data protection within the Schufa Pods, providing users with peace of mind regarding their credit information.
 
+## Request flow
+![image](./Request-flow-diagram.jpg)
+
+## Verification process
+![image](./DOB-verification.jpg)
+---
+![image](./Schufa-score-verification.jpg)
 ## Workflow
 - User initiates login process using their SOLID app credentials within the application.
 - Upon successful login, the application prompts the user to verify their age.
