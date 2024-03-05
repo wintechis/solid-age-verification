@@ -50,8 +50,10 @@ Schufa Pods employ AES encryption to safeguard the stored Schufa credit scores, 
 - Finally, the application provides appropriate access or functionality based on the verified age status.
 
 ## Future Feature Enhancements
-Currently, ACLs only enable granting applications full access to the pod. For instance, if a user visits the Shop while authenticated, the Shop could access her original Schufa score. 
-However, upcoming updates will introduce support for partial access to the pod's data. This enhancement will bolster security, ensuring a more robust data protection framework for users.
+- To address the concern of granting full access to personal PODs, particularly when users may not wish to disclose certain sensitive information like their updated Schufa scores, future feature enhancements can be implemented to safeguard user privacy and data autonomy. 
+
+- One potential solution is the introduction of access controls within the app, enabling users to selectively grant access to specific data within their PODs.
+
  
 
 ## How to start the apps
